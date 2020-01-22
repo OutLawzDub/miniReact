@@ -1,4 +1,4 @@
-import React from './react.js'
+import {createElem, Component} from './react.js'
 
 // Fonction prototypes
 
@@ -26,7 +26,60 @@ String.prototype.interpolate = function (props) {
     });
 }
 
-// 
+
+//
+
+let currentProps;
+
+function mountElement(vElement, parentDOMNode) {
+
+    let currentNode;
+
+    if(vElement.type == 'COMPONENT')
+    {
+        currentNode = parentDOMNode;
+        
+        currentProps = vElement.props;
+    }
+    else if(vElement.type == 'TEXT_ELEMENT')
+    {
+        console.log(vElement, vElement.value);
+
+        let result = document.createTextNode(vElement.value.interpolate(currentProps))
+        
+        return parentDOMNode.appendChild(result);
+    }
+    else
+    {
+        let result = document.createElement(vElement.tag);
+
+        if(vElement.props) {
+            Object.entries(vElement.props).forEach(([key, value]) => {
+                let checkOn = key.match(/^on(.+)/);
+    
+                if(checkOn) {
+                    result.addEventListener(checkOn[1], value);
+                }
+                else
+                {
+                    result.setAttribute(key, value);
+                }
+            })
+        }
+
+        currentNode = result;
+    }
+
+    console.log(vElement);
+
+    vElement.children.forEach(element => {
+        mountElement(element, currentNode);
+    });
+
+    if(vElement.type === 'ELEMENT')
+        parentDOMNode.appendChild(currentNode);
+
+}
 
 console.log('{{user.name}}'.interpolate({ user: { name: 'tomas' } }));
 
@@ -36,12 +89,16 @@ class Header extends Component {
         return createElem('div', { className: 'my-class' }, [
             createElem('h1', {}, ['Bonjour']),
             createElem('h2', {}, ['{{user.name}}']),
-            createElem(NavBar, {}),
             this.props.children
         ])
     }
 }
 
-const myApp = createElem(Header, { user: { name: 'toto' } });
+const myApp = createElem(Header, { user: { name: 'toto'}});
 
-console.log(myApp);
+mountElement(myApp, document.getElementById('root'));
+
+// dans mount element quand tu tombes sur un type element tu fais un document create element
+// text = document create text node 
+
+// et ceux la j'append child à mon élement

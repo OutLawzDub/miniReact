@@ -3,12 +3,13 @@ export function createElem(tag, config, children) {
         props: config
     };
 
+    console.log(typeof tag, tag);
 
     if (typeof tag == "string") {
         result.type = "ELEMENT";
         result.tag = tag;
 
-        result.children = children.map(child => {
+        result.children = children.filter(child => child !== undefined).map(child => {
             return typeof child !== 'object' ? {
                 type: 'TEXT_ELEMENT',
                 value: child
@@ -24,9 +25,8 @@ export function createElem(tag, config, children) {
         tag.myProps(result.props);
 
         result.type = "COMPONENT";
-        result.children = tag.render();
+        result.children = [tag.render()];
         result.component = tag;
-
 
     };
 
@@ -37,28 +37,10 @@ export function render(element, container) {
 
 }
 
-const React = {
-    createElem,
-    render
-};
-
 export class Component {
     
     myProps (value) {
         this.props = value;
-    }
-
-    mountElement(vElement, parentDOMNode) {
-        const {tag, className}  = vElement;
-        const domNode           = document.createElement(tag);
-    
-        vElement.dom = domNode;
-    
-        if (className !== undefined) {
-            domNode.className = className;
-        }
-    
-        parentDOMNode.appendChild(domNode);
     }
 
     shouldUpdate() {
