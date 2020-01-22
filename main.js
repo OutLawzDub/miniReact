@@ -1,70 +1,66 @@
-function prop_access(array, value)
-{
-    if(typeof value !== "string" || value.length === 0) return array;
-    if(array.length == 0 || typeof array !== 'object' || array === null) return array;
-
+Object.prototype.prop_access = function (value) {
     let split   = value.toLowerCase().split('.');
-    let current = array;
+    let current = this;
 
-    for (let i = 0; i < split.length; i++)
-    {
+    for (let i = 0; i < split.length; i++) {
         current = current[split[i]];
 
-        if(current === undefined)
-        {
+        if (current === undefined) {
             split.slice(0, i);
 
-            return console.log(split.join('.') + ' not exist');
+            throw split.join('.') + ' not exist.';
+            // TODO créer exception exception
         }
     }
 
     return current;
 }
 
-String.prototype.interpolate = function(props) {
-    
+String.prototype.interpolate = function (props) {
+    return this.replace(/\{\{\s*(.*?)\s*\}\}/g, function(value, ...other) {
+        return props.prop_access(other[0]);
+    });
 }
 
-'{{user.name}}'.interpolate(props)
-
-return {
-    props: {
-        user: {
-            name: 'ok'
-        }
-    }
-}
+console.log('{{user.name}}'.interpolate({ user: { name: 'tomas' } }));
 
 function createElement(tag, config, children) {
     const result = {
         props: config
     };
 
-    if(typeof tag == "string")
-    {
+    // console.log("zzz", result);
+
+    if (typeof tag == "string") {
         result.type = "ELEMENT";
         result.tag = tag;
+
+        result.children = children.map(child => {
+            return typeof child !== 'object' ? {
+                type: 'TEXT_ELEMENT',
+                value: child
+            } : child;
+        })
+
     }
-    else
-    {
+    else {
         tag = new tag();
+
+        result.props.children = children;
+
+        tag.myProps(result.props);
 
         result.type = "COMPONENT";
         result.children = tag.render();
         result.component = tag;
     };
 
-    result.children = children.map(function(child) {
-        return typeof child !== 'object' ? {
-            type: 'TEXT_ELEMENT',
-            value: child
-        } : child;
-    })
+    console.log("r", JSON.stringify(result.children));
 
     return result;
 }
 
-function mountVElement(vElement, parentDOMNode) {
+function mountElement(vElement, parentDOMNode) {
     const {tag, className}  = vElement;
     const domNode           = document.createElement(tag);
 
@@ -74,69 +70,43 @@ function mountVElement(vElement, parentDOMNode) {
         domNode.className = className;
     }
 
-    parentDOMNode.appendChild(domNode)
+    parentDOMNode.appendChild(domNode);
 }
 
-const root  = document.getElementById('root');
-const myApp = createVElement('div', { className: 'my-class'});
+// const root  = document.getElementById('root');
+// const myApp = createVElement('div', { className: 'my-class'});
 
-mountVElement(myApp, root);
+// mountVElement(myApp, root);
 
-const myApp = createVElement('div', { className: 'my-class'}, [
-    "Bonjour Hello"
-]);
+// const myApp = createVElement('div', { className: 'my-class'}, [
+//     "Bonjour Hello"
+// ]);
 
-const myApp = createVElement('div', { className: 'my-class'}, [
-    createVElement('h1', {}, ['Bonjour']),
-    createVElement('h2', {}, ['Toto'])
-]);
+// const myApp = createVElement('div', { className: 'my-class'}, [
+//     createVElement('h1', {}, ['Bonjour']),
+//     createVElement('h2', {}, ['Toto'])
+// ]);
 
-{
-    type: 'ELEMENT',
-    tag: "div",
-    props: {
-        className: 'my-class'
-    },
-    children: [
-        {
-            type: 'ELEMENT',
-            tag: "h1",
-            props: {
-            },
-            children: [
-                {
-                    type: 'TEXT_ELEMENT',
-                    props: {
-                    },
-                    children: [ 
-                    ]
-                }
-            ]
-        },
-        {
-            type: 'ELEMENT',
-            tag: "h2",
-            props: {
-            },
-            children: [
-                {
-                    type: 'TEXT_ELEMENT',
-                    text: '{{user.name}}'
-                }
-            ]
-        }
-    ]
+// const myApp = createVElement(Header, {user: {name: 'toto'}}, [
+// ]);
+
+class Component {
+    
+    myProps (value) {
+        this.props = value;
+    }
 }
 
 class Header extends Component {
     render() {
-        return createVElement('div', { className: 'my-class'}, [
-            createVElement('h1', {}, ['Bonjour']),
-            createVElement('h2', {}, ['{{user.name}}'])
+        return createElement('div', { className: 'my-class' }, [
+            createElement('h1', {}, ['Bonjour']),
+            createElement('h2', {}, ['{{user.name}}']),
+            this.props.children
         ])
     }
 }
 
-const myApp = createVElement(Header, {user: {name: 'toto'}}, [
-]);
+const myApp = createElement(Header, { user: { name: 'toto' } });
 
+console.log(myApp);
