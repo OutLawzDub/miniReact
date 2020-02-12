@@ -9,44 +9,63 @@ export class Bye extends Component {
     left: false
   };
   async makeJoke() {
-    var xmlhttp = new XMLHttpRequest();
-    xmlhttp.onreadystatechange = await function() {
-      if (xmlhttp.readyState == XMLHttpRequest.DONE) {
-        switch (JSON.parse(xmlhttp.response).type) {
-          case "single":
-            document.getElementById("joke").innerHTML = JSON.parse(
-              xmlhttp.response
-            ).joke;
-            break;
-          case "twopart":
-            document.getElementById("joke").innerHTML = JSON.parse(
-              xmlhttp.response
-            ).setup;
-            setTimeout(() => {
-              document.getElementById("delivery").innerHTML = JSON.parse(
-                xmlhttp.response
-              ).delivery;
-            }, 3000);
-            break;
-          default:
-            document.getElementById("joke").innerHTML = "problem api";
-            break;
-        }
-        if (xmlhttp.status == 200) {
-        } else if (xmlhttp.status == 400) {
-          alert("There was an error 400");
-        } else {
-          alert("something else other than 200 was returned");
-        }
-      }
-    };
 
-    xmlhttp.open(
-      "GET",
-      "https://sv443.net/jokeapi/category/Programming?blacklistFlags=religious",
-      true
-    );
-    xmlhttp.send();
+    const promise = new Promise(function(resolve, reject) {
+      var xmlhttp = new XMLHttpRequest();
+
+      xmlhttp.onreadystatechange = function()
+      {
+        if (xmlhttp.readyState == XMLHttpRequest.DONE)
+        {
+          if (xmlhttp.status == 200)
+          {
+            resolve(xmlhttp.response);
+          }
+          else if (xmlhttp.status == 400)
+          {
+              reject("There was an error 400");
+          }
+          else
+          {
+              reject("something else other than 200 was returned");
+          }
+        }
+      };
+  
+      xmlhttp.open(
+        "GET",
+        "https://sv443.net/jokeapi/category/Programming?blacklistFlags=religious",
+        true
+      );
+      xmlhttp.send();
+    });
+
+    promise.then(function(value) {
+      switch (JSON.parse(value).type) {
+        case "single":
+          document.getElementById("joke").innerHTML = JSON.parse(
+            value
+          ).joke;
+          break;
+        case "twopart":
+          document.getElementById("joke").innerHTML = JSON.parse(
+            value
+          ).setup;
+          setTimeout(() => {
+            document.getElementById("delivery").innerHTML = JSON.parse(
+              value
+            ).delivery;
+          }, 3000);
+          break;
+        default:
+          document.getElementById("joke").innerHTML = "problem api";
+          break;
+      }
+      
+    })
+    .catch(function(error) {
+      console.log(error);
+    });
 
     this.setState({ left: true });
   }
