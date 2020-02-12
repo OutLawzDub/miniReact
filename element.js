@@ -65,6 +65,9 @@ let currentProps;
 
 export function mountElement(vElement, parentDOMNode, from) {
 
+  if(!vElement)
+    return;
+    
   let currentNode;
   if (vElement.type == "COMPONENT") {
     currentNode = parentDOMNode;
