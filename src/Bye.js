@@ -8,30 +8,25 @@ export class Bye extends Component {
   state = {
     left: false
   };
+
   async makeJoke() {
+    var _this = this;
 
     const promise = new Promise(function(resolve, reject) {
       var xmlhttp = new XMLHttpRequest();
 
-      xmlhttp.onreadystatechange = function()
-      {
-        if (xmlhttp.readyState == XMLHttpRequest.DONE)
-        {
-          if (xmlhttp.status == 200)
-          {
+      xmlhttp.onreadystatechange = function() {
+        if (xmlhttp.readyState == XMLHttpRequest.DONE) {
+          if (xmlhttp.status == 200) {
             resolve(xmlhttp.response);
-          }
-          else if (xmlhttp.status == 400)
-          {
-              reject("There was an error 400");
-          }
-          else
-          {
-              reject("something else other than 200 was returned");
+          } else if (xmlhttp.status == 400) {
+            reject("There was an error 400");
+          } else {
+            reject("something else other than 200 was returned");
           }
         }
       };
-  
+
       xmlhttp.open(
         "GET",
         "https://sv443.net/jokeapi/category/Programming?blacklistFlags=religious",
@@ -40,32 +35,32 @@ export class Bye extends Component {
       xmlhttp.send();
     });
 
-    promise.then(function(value) {
-      switch (JSON.parse(value).type) {
-        case "single":
-          document.getElementById("joke").innerHTML = JSON.parse(
-            value
-          ).joke;
-          break;
-        case "twopart":
-          document.getElementById("joke").innerHTML = JSON.parse(
-            value
-          ).setup;
-          setTimeout(() => {
-            document.getElementById("delivery").innerHTML = JSON.parse(
-              value
-            ).delivery;
-          }, 3000);
-          break;
-        default:
-          document.getElementById("joke").innerHTML = "problem api";
-          break;
-      }
-      
-    })
-    .catch(function(error) {
-      console.log(error);
-    });
+    promise
+      .then(function(value) {
+        switch (JSON.parse(value).type) {
+          case "single":
+            _this.setState({ joke: JSON.parse(value).joke, left: true });
+            break;
+          case "twopart":
+            _this.setState({
+              joke: JSON.parse(value).setup,
+              delivery: JSON.parse(value).delivery,
+              left: true
+            });
+
+            break;
+          default:
+            _this.setState({
+              joke: "Problème, lors de la récupération",
+              left: true
+            });
+            break;
+        }
+      })
+      .catch(function(error) {
+        console.log(error);
+        _this.setState({ error: error, left: true });
+      });
 
     this.setState({ left: true });
   }
@@ -92,7 +87,7 @@ export class Bye extends Component {
               ? "display: inline;  font-family: Kohicle25; font-weight: bolder; font-size: 70px; text-align: center"
               : "display: none"
           },
-          [""]
+          [this.state.joke]
         ),
         createElem(
           "h2",
@@ -102,8 +97,9 @@ export class Bye extends Component {
               ? "display: inline;  font-family: Kohicle25; font-weight: bolder; font-size: 70px; text-align: center"
               : "display: none"
           },
-          [""]
+          [this.state.delivery]
         ),
+        createElem("h2", { style: "color: red;" }, [this.state.error]),
         createElem(
           "button",
           {
@@ -135,7 +131,7 @@ export class Bye extends Component {
         this.props.children
       ]
     );
-    unMountElement(bye);
+    unMountElement();
 
     return mountElement(bye, document.getElementById("root"));
   }

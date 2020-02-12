@@ -1,6 +1,7 @@
 import { Component } from "../react.js";
 import { createElem, mountElement, unMountElement } from "../element.js";
 import { Bye } from "./Bye.js";
+import { type_check } from "../type-check.js";
 
 const center =
   "display: flex; align-items: center; justify-content: center; height: 100%; flex-direction: column;";
@@ -8,7 +9,14 @@ const center =
 export class Hello extends Component {
   age(e) {
     e.stopPropagation();
-    this.setState({ age: event.target.value });
+    let check = type_check(parseInt(event.target.value), {
+      type: "Number",
+      properties: {},
+      value: parseInt(event.target.value),
+      enum: []
+    });
+    console.log(check);
+    this.setState({ age: parseInt(event.target.value) });
   }
 
   render() {
@@ -23,7 +31,7 @@ export class Hello extends Component {
         createElem("p", {}, [this.props.user.name]),
         createElem("p", {}, [this.state.age || this.props.user.age || ""]),
         createElem("p", {}, [this.props.user.sexe]),
-        createElem("div", {style: "margin: 20px 0"}, [
+        createElem("div", { style: "margin: 20px 0" }, [
           createElem(
             "input",
             {
@@ -62,7 +70,7 @@ export class Hello extends Component {
         this.props.children
       ]
     );
-    unMountElement(x);
+    unMountElement();
     return mountElement(x, document.getElementById("root"));
   }
 }

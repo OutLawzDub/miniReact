@@ -58,8 +58,8 @@ export class Home extends Component {
         this.props.children
       ]
     );
-    unMountElement(test);
+    unMountElement();
 
-    return mountElement(test, document.getElementById("root"), "aaaaasqlskqlk");
+    return mountElement(test, document.getElementById("root"));
   }
 }

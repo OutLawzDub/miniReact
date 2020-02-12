@@ -59,11 +59,11 @@ String.prototype.interpolate = function(props) {
   });
 };
 
-//
+// {{ this.user }}
 
 let currentProps;
 
-export function mountElement(vElement, parentDOMNode, from) {
+export function mountElement(vElement, parentDOMNode) {
 
   let currentNode;
   if (vElement.type == "COMPONENT") {
