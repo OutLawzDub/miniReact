@@ -9,19 +9,18 @@ const center =
 export class Hello extends Component {
   age(e) {
     e.stopPropagation();
-    // let check = type_check_v2(parseInt(event.target.value), {
-    //   type: "number",
-    //   properties: {},
-    //   value: parseInt(event.target.value),
-    //   enum: []
-    // });
+    let checkNum = Number(event.target.value);
+    if (isNaN(checkNum)) checkNum = event.target.value;
 
-    this.setState({ age: event.target.value });
-    // if (check) {
-    //   this.setState({ age: event.target.value });
-    // } else {
-    //   this.setState({ error: "Entrez un chiffre!" });
-    // }
+    let check = type_check_v2(checkNum, {
+      type: "number"
+    });
+
+    if (check.res) {
+      this.setState({ age: event.target.value });
+    } else {
+      this.setState({ error: check.msg });
+    }
   }
 
   render() {
@@ -35,11 +34,17 @@ export class Hello extends Component {
       [
         createElem("h1", {}, ["Bonjour, "]),
         createElem("p", {}, [this.props.user.name]),
-        createElem("p", {}, [
-          this.state.error
-            ? this.state.error
-            : this.state.age || this.props.user.age
-        ]),
+        createElem(
+          "p",
+          {
+            style: this.state.error ? "color: red" : "color: black"
+          },
+          [
+            this.state.error
+              ? this.state.error
+              : this.state.age || this.props.user.age
+          ]
+        ),
         createElem("p", {}, [this.props.user.sexe]),
         createElem("div", { style: "margin: 20px 0" }, [
           createElem(

@@ -1,6 +1,7 @@
 import { Component } from "../react.js";
 import { createElem, mountElement, unMountElement } from "../element.js";
 import { Hello } from "./Hello.js";
+import { type_check_v2 } from "../type-check.js";
 
 const center =
   "display: flex; align-items: center; justify-content: center; height: 100%; flex-direction: column;";
@@ -9,12 +10,22 @@ export class Home extends Component {
   test = e => {
     e.stopPropagation();
 
-    this.setState({
-      name: e.target.value
+    let checkNum = Number(e.target.value);
+    if (isNaN(checkNum)) checkNum = e.target.value;
+
+    let check = type_check_v2(checkNum, {
+      type: "string"
     });
+
+    if (check.res) {
+      this.setState({ name: e.target.value });
+    } else {
+      this.setState({ error: check.msg });
+    }
   };
 
   render() {
+    console.log(this.state);
     let test = createElem(
       "div",
       {
@@ -40,20 +51,23 @@ export class Home extends Component {
             )
           ]
         ),
-        this.state.name &&
+        (this.state.name || this.state.error) &&
           createElem(
             "div",
             {
+              style: this.state.error ? "color: red" : "color: black",
               onclick: () => {
                 history.pushState(null, null, "/hello?user=" + this.state.name);
 
                 unMountElement();
 
-                let a = new Hello({ user: { name: this.state.name } });
+                let a = new Hello({
+                  user: { name: this.state.name }
+                });
                 a.render();
               }
             },
-            ["Salut, " + this.state.name]
+            [this.state.error ? this.state.error : `Salut, ${this.state.name}`]
           ),
         this.props.children
       ]

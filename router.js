@@ -53,9 +53,7 @@ export class Router {
           return Object.assign(result, current);
         }, {});
 
-
-        console.log(t);
-      if (t[0] != undefined)
+        if (t[0] != undefined)
         t.forEach(x => {
           let rg = new RegExp(`${x.replace(/\?|&/, "")}`, "g");
           let rg2 = new RegExp(`${x.replace(/\?|&/, "")}={{val}}`, "g");
@@ -67,7 +65,6 @@ export class Router {
           }
         });
 
-        console.log(route);
       route.path = this.cleanPath(route.path).replace("&&", "&");
       route.path = this.cleanPath(route.path).replace("??", "?");
 
