@@ -20,11 +20,11 @@ export function createElem(tag, config, children) {
           : child;
       });
   } else {
-    tag = new tag();
+    tag = new tag(result.props);
 
     result.props.children = children;
 
-    tag.myProps(result.props);
+    // tag(result.props);
 
     result.type = "COMPONENT";
     result.children = [tag.render()];
@@ -63,9 +63,9 @@ String.prototype.interpolate = function(props) {
 
 let currentProps;
 
-export function mountElement(vElement, parentDOMNode) {
-  let currentNode;
+export function mountElement(vElement, parentDOMNode, from) {
 
+  let currentNode;
   if (vElement.type == "COMPONENT") {
     currentNode = parentDOMNode;
 
@@ -73,9 +73,10 @@ export function mountElement(vElement, parentDOMNode) {
   } else if (vElement.type == "TEXT_ELEMENT") {
     // console.log(vElement, vElement.value);
 
-    let result = document.createTextNode(
-      vElement.value.interpolate(currentProps)
-    );
+      let result = document.createTextNode(
+        vElement.value.interpolate(currentProps)
+      );
+    
 
     return parentDOMNode.appendChild(result);
   } else {
@@ -96,16 +97,14 @@ export function mountElement(vElement, parentDOMNode) {
     currentNode = result;
   }
 
-  //   console.log(vElement);
-
   vElement.children.forEach(element => {
-    mountElement(element, currentNode);
+    mountElement(element, currentNode, "children");
   });
 
   if (vElement.type === "ELEMENT") parentDOMNode.appendChild(currentNode);
 }
 
-export function unMountElement(child) {
+export function unMountElement() {
   var element = document.getElementById("root");
   while (element.firstChild) {
     element.removeChild(element.firstChild);
